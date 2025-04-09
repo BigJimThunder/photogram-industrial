@@ -32,6 +32,8 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
   
+  mount_uploader :avatar_image, ImageUploader
+  
   has_many :own_photos, class_name: "Photo", foreign_key: "owner_id"
 
   has_many :comments, foreign_key: "author_id"
@@ -45,12 +47,11 @@ class User < ApplicationRecord
   has_many :likes, foreign_key: :fan_id
 
   has_many :liked_photos, through: :likes, source: :photo
-  has_many :leaders, through: :accepted_follow_requests, source: :recipient
+  has_many :leaders, through: :accepted_sent_follow_requests, source: :recipient
   has_many :followers, through: :accepted_received_follow_requests, source: :sender
 
-  has_many :feed, through: :leaders, source: :own_photos
-
-  has_many :discover, -> { distinct }, through: :leaders, source: :liked_photos
+  has_many :feed, :through => :leaders, :source => :own_photos
+  has_many :discover, :through => :leaders, :source => :liked_photos
 
   validates :username, presence: true, uniqueness: true
 end
