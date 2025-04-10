@@ -77,13 +77,5 @@
 </div>
 
 <% @user.own_photos.each do |photo| %>
-  <div class="mb-3">
-    <%= render "photos/photo", photo: photo %>
-
-    <% if current_user == @user %>
-      <div class="text-end mt-2">
-        <%= button_to "Delete Photo", photo_path(photo), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "btn btn-danger btn-sm" %>
-      </div>
-    <% end %>
-  </div>
+  <%= render "photos/photo", photo: photo %>
 <% end %>
