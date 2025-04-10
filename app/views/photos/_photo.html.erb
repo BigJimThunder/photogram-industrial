@@ -1,27 +1,66 @@
-<div id="<%= dom_id photo %>">
-  <p>
-    <strong>Image:</strong>
-    <%= image_tag photo.image_url %>
-  </p>
+<div class="row mb-4">
+  <div class="col-md-6 offset-md-3">
+    <div class="card">
+      <%= image_tag photo.image_url, class: "card-img-top" %>
 
-  <p>
-    <strong>Comments count:</strong>
-    <%= photo.comments_count %>
-  </p>
+      <div class="card-body">
+        <h5 class="card-title"><%= photo.owner.username %></h5>
+        <p class="card-text"><%= photo.caption %></p>
+      </div>
 
-  <p>
-    <strong>Likes count:</strong>
-    <%= photo.likes_count %>
-  </p>
+      <ul class="list-group list-group-flush">
+        <% photo.comments.each do |comment| %>
+          <li class="list-group-item">
+            <div class="d-flex">
+              <div class="flex-shrink-0">
+                <%#= image_tag comment.author.avatar_image_url, class: "rounded-circle me-2", width: "36px" %>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h5 class="mt-0"><%= comment.author.username %></h5>
+                <p><%= comment.body %></p>
 
-  <p>
-    <strong>Caption:</strong>
-    <%= photo.caption %>
-  </p>
+                <% if comment.author == current_user %>
+                  <div class="mt-2">
+                    <%= link_to edit_comment_path(comment), class: "btn btn-outline-secondary btn-sm" do %>
+                      <i class="fa fa-edit"></i>
+                    <% end %>
 
-  <p>
-    <strong>Owner:</strong>
-    <%= photo.owner_id %>
-  </p>
+                    <%= button_to comment_path(comment), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "btn btn-danger btn-sm" do %>
+                      <i class="fa fa-trash"></i>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
 
+      <div class="card-body">
+        <% if current_user.likes.exists?(photo_id: photo.id) %>
+          <% like = current_user.likes.find_by(photo_id: photo.id) %>
+          <%= button_to "Un-like", like_path(like), method: :delete, class: "btn btn-warning btn-sm" %>
+        <% else %>
+          <%= form_with url: likes_path, method: :post, local: true do |form| %>
+            <%= form.hidden_field :photo_id, value: photo.id %>
+            <%= form.hidden_field :fan_id, value: current_user.id %>
+            <%= form.submit "Like", class: "btn btn-outline-primary btn-sm" %>
+          <% end %>
+        <% end %>
+
+        <%= render "comments/form", comment: photo.comments.build %>
+      </div>
+    </div>
+  </div>
 </div>
+
+<% if photo.owner == current_user %>
+  <%= button_to "Delete", photo_path(photo), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "btn btn-danger btn-sm" %>
+<% end %>
+<% if photo.owner == current_user %>
+  <%= link_to edit_photo_path(photo), class: "btn btn-outline-secondary btn-sm" do %>
+    <i class="fa fa-edit"></i>
+  <% end %>
+
+  <%= button_to "Delete", photo_path(photo), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "btn btn-danger btn-sm" %>
+<% end %>

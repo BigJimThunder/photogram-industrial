@@ -22,7 +22,8 @@ class PhotosController < ApplicationController
   # POST /photos or /photos.json
   def create
     @photo = Photo.new(photo_params)
-
+    @photo.owner = current_user # 🔥 this is key
+  
     respond_to do |format|
       if @photo.save
         format.html { redirect_to @photo, notice: "Photo was successfully created." }
@@ -33,6 +34,7 @@ class PhotosController < ApplicationController
       end
     end
   end
+  
 
   # PATCH/PUT /photos/1 or /photos/1.json
   def update
@@ -60,11 +62,11 @@ class PhotosController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_photo
-      @photo = Photo.find(params.expect(:id))
+      @photo = Photo.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.
     def photo_params
-      params.expect(photo: [ :image, :comments_count, :likes_count, :caption, :owner_id ])
+      params.require(:photo).permit(:image, :caption)
     end
 end

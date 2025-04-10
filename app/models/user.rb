@@ -33,6 +33,29 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
   
   mount_uploader :avatar_image, ImageUploader
+
+  def discover
+    User
+      .joins(:received_follow_requests)
+      .where(follow_requests: { sender_id: self.id, status: "accepted" })
+      .includes(:liked_photos)
+      .flat_map(&:liked_photos)
+      .uniq
+      .sort_by(&:created_at)
+      .reverse
+  end
+  
+  def feed
+    User
+      .joins(:received_follow_requests)
+      .where(follow_requests: { sender_id: self.id, status: "accepted" }) # users I follow
+      .includes(:own_photos)
+      .map(&:own_photos)
+      .flatten
+      .uniq
+      .sort_by(&:created_at)
+      .reverse
+  end
   
   has_many :own_photos, class_name: "Photo", foreign_key: "owner_id"
 
